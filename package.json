@@ -35,6 +35,5 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-react": "^7.28.0"
-  },
-  "bin": "./cli.js"
+  }
 }
