@@ -183,13 +183,13 @@ export default class RPCClient {
   @param {Array<*>} [params]
   @returns {Promise}
   */
-  call = (method, reqParams = [], options = {}) => {
+  call = (method, reqParams, options = {}) => {
     const { timeout = this.timeout } = options
     const deferred = deferredFactory()
     const params = []
 
     // replace callback params
-    for (const param of Array.from(reqParams)) {
+    for (const param of Array.from(reqParams || [])) {
       if (typeof param === 'function') {
         const callback = RPCClient.createRPCCallback(param)
         this.callbackFunctions[callback.callbackId] = param
