@@ -1,5 +1,3 @@
-import * as _ from 'lodash-es'
-
 import RPCClient from './rpc_client.js'
 
 const DEFAULT_HANDSHAKE_TIMEOUT_MS = 10000 // 10 seconds
@@ -90,12 +88,12 @@ class BrowserComms {
         }, values => {
           try {
             values = JSON.parse(values?.[0])
-            if (!_.isEmpty(values)) {
+            if (values && values.length) {
               this.iabWindow.executeScript({
                 code: "localStorage.setItem('portal:queue', '[]')"
               })
             }
-            return _.map(values, callback)
+            return values.map((value) => callback(value))
           } catch (err) {
             return console.log(err, values)
           }
