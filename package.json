@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/spore-gg/spore-component-sync.git"
+    "url": "git+https://github.com/spore-gg/browser-comms.git"
   },
   "author": "Spore",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/spore-gg/spore-component-sync/issues"
+    "url": "https://github.com/spore-gg/browser-comms/issues"
   },
-  "homepage": "https://github.com/spore-gg/spore-component-sync#readme",
+  "homepage": "https://github.com/spore-gg/browser-comms#readme",
   "dependencies": {
     "axios": "^0.24.0",
     "esm": "https://github.com/jsg2021/esm/releases/download/v3.x.x-pr883/esm-3.x.x-pr883.tgz",
