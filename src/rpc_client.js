@@ -251,7 +251,7 @@ export function isRPCResponse (response) {
 
   @returns RPCCallback
   */
-function createRPCCallback () {
+export function createRPCCallback () {
   return { _browserComms: true, _browserCommsGunCallback: true, callbackId: uuid.v4() }
 }
 
@@ -267,7 +267,7 @@ function createRPCCallback () {
   @param {Array<*>} [props.params] - Functions are not allowed
   @returns RPCRequest
   */
-function createRPCRequest ({ method, params }) {
+export function createRPCRequest ({ method, params }) {
   if (params == null) {
     throw new Error('Must provide params')
   }
@@ -281,8 +281,8 @@ function createRPCRequest ({ method, params }) {
   return { _browserComms: true, id: uuid.v4(), method, params }
 }
 
-function isRPCRequestAcknowledgement (ack) { return ack?.acknowledge === true }
+export function isRPCRequestAcknowledgement (ack) { return ack?.acknowledge === true }
 
-function isRPCCallbackResponse (response) {
+export function isRPCCallbackResponse (response) {
   return response?.callbackId && response.params != null
 }
