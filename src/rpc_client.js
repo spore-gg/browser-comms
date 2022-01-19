@@ -22,7 +22,7 @@
 
 import uuid from 'uuid'
 
-const ERROR_CODES = {
+export const ERROR_CODES = {
   METHOD_NOT_FOUND: -32601,
   INVALID_ORIGIN: 100,
   DEFAULT: -1
@@ -57,126 +57,7 @@ export default class RPCClient {
     this.callbackFunctions = {}
   }
 
-  static ERROR_CODES = ERROR_CODES
-  static ERROR_MESSAGES = ERROR_MESSAGES
-
-  /*
-  @typedef {Object} RPCRequest
-  @property {Boolean} _browserComms - Must be true
-  @property {String} id
-  @property {String} method
-  @property {Array<*>} params
-
-  @param {Object} props
-  @param {String} props.method
-  @param {Array<*>} [props.params] - Functions are not allowed
-  @returns RPCRequest
-  */
-  static createRPCRequest ({ method, params }) {
-    if (params == null) {
-      throw new Error('Must provide params')
-    }
-
-    for (const param of Array.from(params)) {
-      if (typeof param === 'function') {
-        throw new Error('Functions are not allowed. Use RPCCallback instead.')
-      }
-    }
-
-    return { _browserComms: true, id: uuid.v4(), method, params }
-  }
-
-  /*
-  @typedef {Object} RPCCallback
-  @property {Boolean} _browserComms - Must be true
-  @property {String} callbackId
-  @property {Boolean} _browserCommsGunCallback - Must be true
-
-  @returns RPCCallback
-  */
-  static createRPCCallback () {
-    return { _browserComms: true, _browserCommsGunCallback: true, callbackId: uuid.v4() }
-  }
-
-  /*
-  @typedef {Object} RPCCallbackResponse
-  @property {Boolean} _browserComms - Must be true
-  @property {String} callbackId
-  @property {Array<*>} params
-
-  @param {Object} props
-  @param {Array<*>} props.params
-  @param {String} props.callbackId
-  @returns RPCCallbackResponse
-  */
-  static createRPCCallbackResponse ({ params, callbackId }) {
-    return { _browserComms: true, callbackId, params }
-  }
-
-  /*
-  @typedef {Object} RPCRequestAcknowledgement
-  @property {Boolean} _browserComms - Must be true
-  @property {String} id
-  @property {Boolean} acknowledge - must be true
-
-  @param {Object} props
-  @param {String} props.responseId
-  @returns RPCRequestAcknowledgement
-  */
-  static createRPCRequestAcknowledgement ({ requestId }) {
-    return { _browserComms: true, id: requestId, acknowledge: true }
-  }
-
-  /*
-  @typedef {Object} RPCResponse
-  @property {Boolean} _browserComms - Must be true
-  @property {String} id
-  @property {*} result
-  @property {RPCError} error
-
-  @param {Object} props
-  @param {String} props.requestId
-  @param {*} [props.result]
-  @param {RPCError|Null} [props.error]
-  @returns RPCResponse
-  */
-  static createRPCResponse ({ requestId, result = null, rPCError = null }) {
-    return { _browserComms: true, id: requestId, result, error: rPCError }
-  }
-
-  /*
-  @typedef {Object} RPCError
-  @property {Boolean} _browserComms - Must be true
-  @property {Integer} code
-  @property {String} message
-  @property {Object} data - optional
-
-  @param {Object} props
-  @param {Errpr} [props.error]
-  @returns RPCError
-  */
-  static createRPCError ({ code, data = null }) {
-    const message = ERROR_MESSAGES[code]
-    return { _browserComms: true, code, message, data }
-  }
-
-  static isRPCEntity (entity) { return entity?._browserComms }
-  static isRPCRequest (request) {
-    return request?.id != null && request.method != null
-  }
-
   static isRPCCallback (callback) { return callback?._browserCommsGunCallback }
-  static isRPCResponse (response) {
-    return response?.id && (
-      response.result !== undefined || response.error !== undefined
-    )
-  }
-
-  static isRPCCallbackResponse (response) {
-    return response?.callbackId && response.params != null
-  }
-
-  static isRPCRequestAcknowledgement (ack) { return ack?.acknowledge === true }
 
   /*
   @param {String} method
@@ -191,7 +72,7 @@ export default class RPCClient {
     // replace callback params
     for (const param of Array.from(reqParams || [])) {
       if (typeof param === 'function') {
-        const callback = RPCClient.createRPCCallback(param)
+        const callback = createRPCCallback(param)
         this.callbackFunctions[callback.callbackId] = param
         params.push(callback)
       } else {
@@ -199,7 +80,7 @@ export default class RPCClient {
       }
     }
 
-    const request = RPCClient.createRPCRequest({ method, params })
+    const request = createRPCRequest({ method, params })
 
     this.pendingRequests[request.id] = {
       reject: deferred.reject,
@@ -228,11 +109,11 @@ export default class RPCClient {
   */
   resolve = (response) => {
     switch (false) {
-      case !RPCClient.isRPCRequestAcknowledgement(response):
+      case !isRPCRequestAcknowledgement(response):
         return this.resolveRPCRequestAcknowledgement(response)
-      case !RPCClient.isRPCResponse(response):
+      case !isRPCResponse(response):
         return this.resolveRPCResponse(response)
-      case !RPCClient.isRPCCallbackResponse(response):
+      case !isRPCCallbackResponse(response):
         return this.resolveRPCCallbackResponse(response)
       default:
         throw new Error('Unknown response type')
@@ -286,4 +167,122 @@ export default class RPCClient {
     callbackFn.apply(null, rPCCallbackResponse.params)
     return null
   }
+}
+
+/*
+  @typedef {Object} RPCCallbackResponse
+  @property {Boolean} _browserComms - Must be true
+  @property {String} callbackId
+  @property {Array<*>} params
+
+  @param {Object} props
+  @param {Array<*>} props.params
+  @param {String} props.callbackId
+  @returns RPCCallbackResponse
+  */
+export function createRPCCallbackResponse ({ params, callbackId }) {
+  return { _browserComms: true, callbackId, params }
+}
+
+/*
+  @typedef {Object} RPCRequestAcknowledgement
+  @property {Boolean} _browserComms - Must be true
+  @property {String} id
+  @property {Boolean} acknowledge - must be true
+
+  @param {Object} props
+  @param {String} props.responseId
+  @returns RPCRequestAcknowledgement
+  */
+export function createRPCRequestAcknowledgement ({ requestId }) {
+  return { _browserComms: true, id: requestId, acknowledge: true }
+}
+
+/*
+  @typedef {Object} RPCResponse
+  @property {Boolean} _browserComms - Must be true
+  @property {String} id
+  @property {*} result
+  @property {RPCError} error
+
+  @param {Object} props
+  @param {String} props.requestId
+  @param {*} [props.result]
+  @param {RPCError|Null} [props.error]
+  @returns RPCResponse
+  */
+export function createRPCResponse ({ requestId, result = null, rPCError = null }) {
+  return { _browserComms: true, id: requestId, result, error: rPCError }
+}
+
+/*
+  @typedef {Object} RPCError
+  @property {Boolean} _browserComms - Must be true
+  @property {Integer} code
+  @property {String} message
+  @property {Object} data - optional
+
+  @param {Object} props
+  @param {Errpr} [props.error]
+  @returns RPCError
+  */
+export function createRPCError ({ code, data = null }) {
+  const message = ERROR_MESSAGES[code]
+  return { _browserComms: true, code, message, data }
+}
+
+export function isRPCEntity (entity) { return entity?._browserComms }
+
+export function isRPCRequest (request) {
+  return request?.id != null && request.method != null
+}
+
+export function isRPCResponse (response) {
+  return response?.id && (
+    response.result !== undefined || response.error !== undefined
+  )
+}
+
+/*
+  @typedef {Object} RPCCallback
+  @property {Boolean} _browserComms - Must be true
+  @property {String} callbackId
+  @property {Boolean} _browserCommsGunCallback - Must be true
+
+  @returns RPCCallback
+  */
+function createRPCCallback () {
+  return { _browserComms: true, _browserCommsGunCallback: true, callbackId: uuid.v4() }
+}
+
+/*
+  @typedef {Object} RPCRequest
+  @property {Boolean} _browserComms - Must be true
+  @property {String} id
+  @property {String} method
+  @property {Array<*>} params
+
+  @param {Object} props
+  @param {String} props.method
+  @param {Array<*>} [props.params] - Functions are not allowed
+  @returns RPCRequest
+  */
+function createRPCRequest ({ method, params }) {
+  if (params == null) {
+    throw new Error('Must provide params')
+  }
+
+  for (const param of Array.from(params)) {
+    if (typeof param === 'function') {
+      throw new Error('Functions are not allowed. Use RPCCallback instead.')
+    }
+  }
+
+  return { _browserComms: true, id: uuid.v4(), method, params }
+}
+
+function isRPCRequestAcknowledgement (ack) { return ack?.acknowledge === true }
+
+function isRPCCallbackResponse (response) {
+  return response?.callbackId && response.params != null
 }

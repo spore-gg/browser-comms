@@ -1,4 +1,14 @@
-import RPCClient from './rpc_client.js'
+import RPCClient, {
+  createRPCCallbackResponse,
+  createRPCError,
+  createRPCRequestAcknowledgement,
+  createRPCResponse,
+  ERROR_CODES,
+  isRPCCallback,
+  isRPCEntity,
+  isRPCRequest,
+  isRPCResponse
+} from './rpc_client.js'
 
 const DEFAULT_HANDSHAKE_TIMEOUT_MS = 10000 // 10 seconds
 const SW_CONNECT_TIMEOUT_MS = 5000 // 5s
@@ -265,8 +275,8 @@ window._browserCommsOnMessage('${escapedData}')\
     // replace callback params with proxy functions
     const params = []
     for (const param of Array.from((request.params || []))) {
-      if (RPCClient.isRPCCallback(param)) {
-        (param => params.push((...args) => reply(RPCClient.createRPCCallbackResponse({
+      if (isRPCCallback(param)) {
+        (param => params.push((...args) => reply(createRPCCallbackResponse({
           params: args,
           callbackId: param.callbackId
         }))))(param)
@@ -276,19 +286,19 @@ window._browserCommsOnMessage('${escapedData}')\
     }
 
     // acknowledge request, prevent request timeout
-    reply(RPCClient.createRPCRequestAcknowledgement({ requestId: request.id }))
+    reply(createRPCRequestAcknowledgement({ requestId: request.id }))
 
     try {
       const result = await this.call(request.method, ...Array.from(params))
-      return reply(RPCClient.createRPCResponse({
+      return reply(createRPCResponse({
         requestId: request.id,
         result
       }))
     } catch (err) {
-      return reply(RPCClient.createRPCResponse({
+      return reply(createRPCResponse({
         requestId: request.id,
-        rPCError: RPCClient.createRPCError({
-          code: RPCClient.ERROR_CODES.DEFAULT,
+        rPCError: createRPCError({
+          code: ERROR_CODES.DEFAULT,
           data: err
         })
       }))
@@ -309,23 +319,23 @@ window._browserCommsOnMessage('${escapedData}')\
     try { // silent
       const message = typeof e.data === 'string' ? JSON.parse(e.data) : e.data
 
-      if (!RPCClient.isRPCEntity(message)) {
+      if (!isRPCEntity(message)) {
         throw new Error('Non-portal message')
       }
 
-      if (RPCClient.isRPCRequest(message)) {
+      if (isRPCRequest(message)) {
         return this.onRequest(reply, message)
-      } else if (RPCClient.isRPCEntity(message)) {
+      } else if (isRPCEntity(message)) {
         let rpc
         if (this.isParentValidFn(e.origin)) {
           rpc = isServiceWorker ? this.sw : this.client
           return rpc.resolve(message)
-        } else if (RPCClient.isRPCResponse(message)) {
+        } else if (isRPCResponse(message)) {
           rpc = isServiceWorker ? this.sw : this.client
-          return rpc.resolve(RPCClient.createRPCResponse({
+          return rpc.resolve(createRPCResponse({
             requestId: message.id,
-            rPCError: RPCClient.createRPCError({
-              code: RPCClient.ERROR_CODES.INVALID_ORIGIN
+            rPCError: createRPCError({
+              code: ERROR_CODES.INVALID_ORIGIN
             })
           }))
         } else {
