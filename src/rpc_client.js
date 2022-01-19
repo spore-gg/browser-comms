@@ -55,6 +55,9 @@ export default class RPCClient {
     this.timeout = timeout
     this.pendingRequests = {}
     this.callbackFunctions = {}
+    this.call = this.call.bind(this)
+    this.resolve = this.resolve.bind(this)
+    this.resolveRPCResponse = this.resolveRPCResponse.bind(this)
   }
 
   /*
@@ -62,7 +65,7 @@ export default class RPCClient {
   @param {Array<*>} [params]
   @returns {Promise}
   */
-  call = (method, reqParams, options = {}) => {
+  call (method, reqParams, options = {}) {
     const { timeout = this.timeout } = options
     const deferred = deferredFactory()
     const params = []
@@ -105,7 +108,7 @@ export default class RPCClient {
   /*
   @param {RPCResponse|RPCRequestAcknowledgement|RPCCallbackResponse} response
   */
-  resolve = (response) => {
+  resolve (response) {
     switch (false) {
       case !isRPCRequestAcknowledgement(response):
         return this.resolveRPCRequestAcknowledgement(response)
@@ -121,7 +124,7 @@ export default class RPCClient {
   /*
   @param {RPCResponse} rPCResponse
   */
-  resolveRPCResponse = (rPCResponse) => {
+  resolveRPCResponse (rPCResponse) {
     const request = this.pendingRequests[rPCResponse.id]
     if (request == null) {
       throw new Error('Request not found')
