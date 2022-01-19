@@ -57,8 +57,6 @@ export default class RPCClient {
     this.callbackFunctions = {}
   }
 
-  static isRPCCallback (callback) { return callback?._browserCommsGunCallback }
-
   /*
   @param {String} method
   @param {Array<*>} [params]
@@ -286,3 +284,5 @@ export function isRPCRequestAcknowledgement (ack) { return ack?.acknowledge === 
 export function isRPCCallbackResponse (response) {
   return response?.callbackId && response.params != null
 }
+
+export function isRPCCallback (callback) { return callback?._browserCommsGunCallback }
