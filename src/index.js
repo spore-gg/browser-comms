@@ -74,14 +74,24 @@ class BrowserComms {
       ping: () => Object.keys(this.registeredMethods)
     }
     this.parentsRegisteredMethods = []
+    this.setParent = this.setParent.bind(this)
+    this.setInAppBrowserWindow = this.setInAppBrowserWindow.bind(this)
+    this.replyInAppBrowserWindow = this.replyInAppBrowserWindow.bind(this)
+    this.onMessageInAppBrowserWindow = this.onMessageInAppBrowserWindow.bind(this)
+    this.listen = this.listen.bind(this)
+    this.close = this.close.bind(this)
+    this.call = this.call.bind(this)
+    this.onRequest = this.onRequest.bind(this)
+    this.onMessage = this.onMessage.bind(this)
+    this.on = this.on.bind(this)
   }
 
-  setParent = (parent) => {
+  setParent (parent) {
     this.parent = parent
     this.hasParent = true
   }
 
-  setInAppBrowserWindow = (iabWindow, callback) => {
+  setInAppBrowserWindow (iabWindow, callback) {
     // can't use postMessage, so this hacky executeScript works
     this.iabWindow = iabWindow
     const readyEvent = navigator.userAgent.indexOf('iPhone') !== -1
@@ -115,7 +125,7 @@ class BrowserComms {
     })
   }
 
-  replyInAppBrowserWindow = (data) => {
+  replyInAppBrowserWindow (data) {
     const escapedData = data.replace(/'/g, "'")
     return this.iabWindow.executeScript({
       code: `\
@@ -125,7 +135,7 @@ window._browserCommsOnMessage('${escapedData}')\
     })
   }
 
-  onMessageInAppBrowserWindow = (data) => {
+  onMessageInAppBrowserWindow (data) {
     return this.onMessage({
       data,
       source: {
@@ -139,7 +149,7 @@ window._browserCommsOnMessage('${escapedData}')\
 
   // Binds global message listener
   // Must be called before .call()
-  listen = () => {
+  listen () {
     this.isListening = true
     selfWindow.addEventListener('message', this.onMessage);
 
@@ -177,7 +187,7 @@ window._browserCommsOnMessage('${escapedData}')\
       })
   }
 
-  close = () => {
+  close () {
     this.isListening = true
     return selfWindow.removeEventListener('message', this.onMessage)
   }
@@ -187,7 +197,7 @@ window._browserCommsOnMessage('${escapedData}')\
   @param {...*} params
   @returns Promise
   */
-  call = async (method, ...params) => {
+  async call (method, ...params) {
     if (!this.isListening) {
       return new Promise((resolve, reject) => reject(new Error('Must call listen() before call()')))
     }
@@ -271,7 +281,7 @@ window._browserCommsOnMessage('${escapedData}')\
     }
   }
 
-  onRequest = async (reply, request) => {
+  async onRequest (reply, request) {
     // replace callback params with proxy functions
     const params = []
     for (const param of Array.from((request.params || []))) {
@@ -305,7 +315,7 @@ window._browserCommsOnMessage('${escapedData}')\
     }
   }
 
-  onMessage = (e, param) => {
+  onMessage (e, param) {
     if (param == null) { param = {} }
     const { isServiceWorker } = param
     const reply = function (message) {
@@ -354,7 +364,7 @@ window._browserCommsOnMessage('${escapedData}')\
   @param {String} method
   @param {Function} fn
   */
-  on = (method, fn) => {
+  on (method, fn) {
     this.registeredMethods[method] = fn
   }
 }
