@@ -311,22 +311,20 @@ window._browserCommsOnMessage('${escapedData}')\
     }
   }
 
-  onMessage (e, param) {
-    if (param == null) { param = {} }
-    const { isServiceWorker } = param
-    const reply = function (message) {
-      if (typeof window !== 'undefined' && window !== null) {
-        return e.source?.postMessage(JSON.stringify(message), '*')
-      } else {
-        return e.ports[0].postMessage(JSON.stringify(message))
-      }
-    }
-
+  onMessage (e, { isServiceWorker } = {}) {
     try { // silent
       const message = typeof e.data === 'string' ? JSON.parse(e.data) : e.data
 
       if (!isRPCEntity(message)) {
-        throw new Error('Non-portal message')
+        return // non-browsercomms message
+      }
+
+      const reply = function (message) {
+        if (typeof window !== 'undefined' && window !== null) {
+          return e.source?.postMessage(JSON.stringify(message), '*')
+        } else {
+          return e.ports[0].postMessage(JSON.stringify(message))
+        }
       }
 
       if (isRPCRequest(message)) {
