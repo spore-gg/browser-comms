@@ -20,14 +20,13 @@ class BrowserComms {
   @param {Object} options
   @param {Number} [options.timeout] - request timeout (ms)
   @param {Number} [options.handShakeTimeout=10000] - handshake timeout (ms)
-  @param {Boolean} [options.useSw] - whether or not we should try comms with service worker
+  @param {Boolean} [options.shouldConnectToServiceWorker] - whether or not we should try comms with service worker
   @param {Function<Boolean>} options.isParentValidFn - restrict parent origin
   */
   constructor (options = {}) {
     const {
-      timeout, handshakeTimeout = DEFAULT_HANDSHAKE_TIMEOUT_MS, isParentValidFn = () => true
+      timeout, shouldConnectToServiceWorker, handshakeTimeout = DEFAULT_HANDSHAKE_TIMEOUT_MS, isParentValidFn = () => true
     } = options
-    let useSw = options
     this.handshakeTimeout = handshakeTimeout
     this.isParentValidFn = isParentValidFn
     this.isListening = false
@@ -59,11 +58,8 @@ class BrowserComms {
       }
     })
 
-    useSw = useSw || (navigator.serviceWorker && (typeof window !== 'undefined' && window !== null) &&
-            (window.location.protocol !== 'http:'))
-
-    if (useSw) {
-      // only use service workers if current page has one
+    if (shouldConnectToServiceWorker) {
+      // only use service workers if current page has one we care about
       this.ready = waitForServiceWorker()
     } else {
       this.ready = Promise.resolve(true)
