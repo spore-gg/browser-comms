@@ -277,7 +277,7 @@ window._browserCommsOnMessage('${escapedData}')\
     }
   }
 
-  async onRequest (reply, request) {
+  async onRequest (reply, request, e) {
     // replace callback params with proxy functions
     const params = []
     for (const param of Array.from((request.params || []))) {
@@ -295,7 +295,7 @@ window._browserCommsOnMessage('${escapedData}')\
     reply(createRPCRequestAcknowledgement({ requestId: request.id }))
 
     try {
-      const result = await this.call(request.method, ...Array.from(params))
+      const result = await this.call(request.method, ...Array.from(params), { e })
       return reply(createRPCResponse({
         requestId: request.id,
         result
@@ -328,7 +328,7 @@ window._browserCommsOnMessage('${escapedData}')\
       }
 
       if (isRPCRequest(message)) {
-        return this.onRequest(reply, message)
+        return this.onRequest(reply, message, e)
       } else if (isRPCEntity(message)) {
         let rpc
         if (this.isParentValidFn(e.origin)) {
