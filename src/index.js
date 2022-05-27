@@ -13,7 +13,7 @@ import RPCClient, {
 const DEFAULT_HANDSHAKE_TIMEOUT_MS = 10000 // 10 seconds
 const SW_CONNECT_TIMEOUT_MS = 5000 // 5s
 
-const selfWindow = typeof window !== 'undefined' ? window : self
+const selfWindow = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : null
 
 class BrowserComms {
   /*
@@ -147,7 +147,7 @@ window._browserCommsOnMessage('${escapedData}')\
   // Must be called before .call()
   listen () {
     this.isListening = true
-    selfWindow.addEventListener('message', this.onMessage);
+    selfWindow?.addEventListener('message', this.onMessage);
 
     // set via win.executeScript in cordova
     (typeof window !== 'undefined' && window !== null) && (window._browserCommsOnMessage = eStr => {
@@ -185,7 +185,7 @@ window._browserCommsOnMessage('${escapedData}')\
 
   close () {
     this.isListening = true
-    return selfWindow.removeEventListener('message', this.onMessage)
+    return selfWindow?.removeEventListener('message', this.onMessage)
   }
 
   /*
