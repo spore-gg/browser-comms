@@ -19,7 +19,7 @@ const selfWindow = typeof document !== "undefined"
   ? self
   : null;
 
-class BrowserComms {
+class Jumper {
   /*
   @param {Object} options
   @param {Number} [options.timeout] - request timeout (ms)
@@ -75,7 +75,8 @@ class BrowserComms {
   // Must be called before .call()
   listen() {
     this.isListening = true;
-    selfWindow?.addEventListener("message", this.onMessage);
+    console.log('self', selfWindow)
+    selfWindow?.addEventListener?.("message", this.onMessage);
 
     this.waitForParentPing = this.hasParent &&
       this.client.call("ping", null, { timeout: this.handshakeTimeout })
@@ -266,7 +267,7 @@ class BrowserComms {
   }
 }
 
-export default BrowserComms;
+export default Jumper;
 
 function waitForServiceWorker() {
   return new Promise((resolve, reject) => {

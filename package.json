@@ -1,5 +1,5 @@
 {
-  "name": "browser-comms",
+  "name": "jumper",
   "version": "0.0.2",
   "description": "",
   "main": "src/index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/spore-gg/browser-comms.git"
+    "url": "git+https://github.com/spore-gg/jumper.git"
   },
   "author": "Spore",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/spore-gg/browser-comms/issues"
+    "url": "https://github.com/spore-gg/jumper/issues"
   },
-  "homepage": "https://github.com/spore-gg/browser-comms#readme",
+  "homepage": "https://github.com/spore-gg/jumper#readme",
   "dependencies": {
     "uuid": "^3.4.0"
   },
