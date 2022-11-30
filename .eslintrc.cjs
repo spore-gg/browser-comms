@@ -1,18 +1,29 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true
+    es2021: true,
   },
-  extends: ['standard', 'plugin:react/recommended'],
-  // only necessary because we use clsas properties
-  // https://stackoverflow.com/questions/60046847/eslint-does-not-allow-static-class-properties
-  parser: '@babel/eslint-parser',
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
+  overrides: [
+    {
+      files: ["*.webjs"],
+      extends: "@formidable-webview/eslint-config-webjs",
+    },
+  ],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+  },
+  plugins: ["react", "@typescript-eslint"],
   rules: {
-    'react/prop-types': 0
+    // indent: ["error", 4],
+    "linebreak-style": ["error", "unix"],
+    quotes: ["error", "double"],
+    semi: ["error", "always"],
   },
-  globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
-    globalThis: false // means it is not writeable
-  }
-}
+};
