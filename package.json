@@ -17,9 +17,6 @@
     "url": "https://github.com/spore-gg/jumper/issues"
   },
   "homepage": "https://github.com/spore-gg/jumper#readme",
-  "dependencies": {
-    "uuid": "^3.4.0"
-  },
   "devDependencies": {
     "@babel/cli": "^7.16.8",
     "@babel/core": "^7.16.7",

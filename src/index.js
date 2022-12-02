@@ -37,14 +37,16 @@ class Jumper {
     this.handshakeTimeout = handshakeTimeout;
     this.isParentValidFn = isParentValidFn;
     this.isListening = false;
-    this.hasParent = (typeof document !== "undefined") &&
-      (window.self !== window.top);
-    this.parent = globalThis?.window?.parent;
+    this.hasParent = globalThis?.window?.ReactNativeWebView ||
+      (typeof document !== "undefined" && indow.self !== window.top);
+    this.parent = globalThis?.window?.ReactNativeWebView || globalThis?.window?.parent;
 
     this.client = new RPCClient({
       timeout,
       postMessage: (msg, origin) => {
-        return this.parent?.postMessage(msg, origin);
+        globalThis?.window?.ReactNativeWebView
+          ? this.parent?.postMessage(msg) // react-native doesn't like 2 params
+          : this.parent?.postMessage(msg, origin)
       },
     });
 
@@ -75,8 +77,8 @@ class Jumper {
   // Must be called before .call()
   listen() {
     this.isListening = true;
-    console.log('self', selfWindow)
-    selfWindow?.addEventListener?.("message", this.onMessage);
+    // 3rd param (useCapture) is req for react-native to be able to send back to content script
+    selfWindow.addEventListener("message", this.onMessage, true);
 
     this.waitForParentPing = this.hasParent &&
       this.client.call("ping", null, { timeout: this.handshakeTimeout })
@@ -216,7 +218,7 @@ class Jumper {
     }
   }
 
-  onMessage(e, { isServiceWorker } = {}) {
+  onMessage(e, { isServiceWorker, reply } = {}) {
     try { // silent
       const message = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
 
@@ -224,7 +226,7 @@ class Jumper {
         return; // non-browsercomms message
       }
 
-      const reply = function (message) {
+      reply = reply || function (message) {
         if (typeof document !== "undefined" && window !== null) {
           return e.source?.postMessage(JSON.stringify(message), "*");
         } else {
